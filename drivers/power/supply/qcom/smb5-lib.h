@@ -206,7 +206,7 @@ enum print_reason {
 #define SDP_100_MA			100000
 #define SDP_CURRENT_UA			500000
 #define CDP_CURRENT_UA			1500000
-#ifdef CONFIG_QPNP_SMB5_NABU
+#ifdef CONFIG_MACH_XIAOMI_NABU
 #define DCP_CURRENT_UA			2000000
 #else
 #define DCP_CURRENT_UA                  1600000
@@ -263,8 +263,13 @@ enum print_reason {
 
 /* used for bq charge pump solution */
 #define MAIN_CHARGER_ICL	2000000
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+#define QC3_CHARGER_ICL		50000
+#define QC3P5_CHARGER_ICL	200000
+#else
 #define QC3_CHARGER_ICL		500000
 #define QC3P5_CHARGER_ICL	2000000
+#endif
 
 #define MAIN_CHARGER_STOP_ICL	50000
 #define ESR_WORK_TIME_2S	2000

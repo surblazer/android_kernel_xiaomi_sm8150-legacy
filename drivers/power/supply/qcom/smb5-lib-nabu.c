@@ -933,7 +933,7 @@ int smblib_set_fastcharge_mode(struct smb_charger *chg, bool enable)
 	if (!chg->bms_psy)
 		return 0;
 
-#ifdef CONFIG_BATT_VERIFY_BY_DS28E16_NABU
+#if defined(CONFIG_BATT_VERIFY_BY_DS28E16) || defined(CONFIG_BATT_VERIFY_BY_DS28E16_NABU)
 	rc = power_supply_get_property(chg->bms_psy,
 				POWER_SUPPLY_PROP_AUTHENTIC, &pval);
 	if (rc < 0) {
@@ -1024,7 +1024,7 @@ static void smblib_set_wireless_otg_state(struct smb_charger *chg, bool enable)
 
 }
 */
-#ifdef CONFIG_BATT_VERIFY_BY_DS28E16_NABU
+#if defined(CONFIG_BATT_VERIFY_BY_DS28E16) || defined(CONFIG_BATT_VERIFY_BY_DS28E16_NABU)
 static void smblib_check_batt_authentic(struct smb_charger *chg)
 {
 	int rc = 0;
@@ -1549,7 +1549,7 @@ static int smblib_notifier_call(struct notifier_block *nb,
 		if (!chg->bms_psy)
 			chg->bms_psy = psy;
 		if (ev == PSY_EVENT_PROP_CHANGED) {
-#ifdef CONFIG_BATT_VERIFY_BY_DS28E16_NABU
+#if defined(CONFIG_BATT_VERIFY_BY_DS28E16) || defined(CONFIG_BATT_VERIFY_BY_DS28E16_NABU)
 			if (!chg->batt_verified)
 				schedule_delayed_work(&chg->batt_verify_update_work, 0);
 #endif
@@ -2696,7 +2696,11 @@ int smblib_get_prop_batt_status(struct smb_charger *chg,
 		break;
 	case TERMINATE_CHARGE:
 	case INHIBIT_CHARGE:
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+		if (POWER_SUPPLY_HEALTH_WARM == pval.intval || batt_capa.intval <= 98
+#else
 		if (POWER_SUPPLY_HEALTH_WARM == pval.intval
+#endif
 			|| POWER_SUPPLY_HEALTH_OVERHEAT == pval.intval)
 			val->intval = POWER_SUPPLY_STATUS_CHARGING;
 		else
@@ -7400,7 +7404,7 @@ void smblib_usb_plugin_locked(struct smb_charger *chg)
 		if (rc < 0)
 			smblib_err(chg, "Couldn't to enable DPDM rc=%d\n", rc);
 
-#ifdef CONFIG_BATT_VERIFY_BY_DS28E16_NABU
+#if defined(CONFIG_BATT_VERIFY_BY_DS28E16) || defined(CONFIG_BATT_VERIFY_BY_DS28E16_NABU)
 		smblib_check_batt_authentic(chg);
 #endif
 
@@ -8085,7 +8089,13 @@ static void update_sw_icl_max(struct smb_charger *chg, int pst)
 		if (!is_client_vote_enabled(chg->usb_icl_votable,
 						USB_PSY_VOTER)) {
 			/* if flash is active force 500mA */
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+			vote(chg->usb_icl_votable, USB_PSY_VOTER, true,
+					is_flash_active(chg) ?
+					SDP_CURRENT_UA : SDP_100_MA);
+#else
 			vote(chg->usb_icl_votable, USB_PSY_VOTER, true, SDP_CURRENT_UA);
+#endif
 			vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, false, 0);
 		} else if ((chg->typec_mode == POWER_SUPPLY_TYPEC_NONE) && (val.intval == true))
 			vote(chg->usb_icl_votable, SW_ICL_MAX_VOTER, true, SDP_CURRENT_UA);
@@ -10966,7 +10976,7 @@ int smblib_init(struct smb_charger *chg)
 
 		chg->bms_psy = power_supply_get_by_name("bms");
 
-#ifdef CONFIG_BATT_VERIFY_BY_DS28E16_NABU
+#if defined(CONFIG_BATT_VERIFY_BY_DS28E16) || defined(CONFIG_BATT_VERIFY_BY_DS28E16_NABU)
 		chg->batt_verify_psy = power_supply_get_by_name("batt_verify");
 #endif
 		if (chg->sec_pl_present) {

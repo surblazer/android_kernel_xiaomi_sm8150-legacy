@@ -161,7 +161,11 @@ static struct smb_params smb5_pm8150b_params = {
 		.name	= "usb otg current limit",
 		.reg	= DCDC_OTG_CURRENT_LIMIT_CFG_REG,
 		.min_u	= 500000,
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+		.max_u	= 3000000,
+#else
 		.max_u	= 2000000,
+#endif
 		.step_u	= 500000,
 	},
 	.dc_icl		= {
@@ -495,7 +499,11 @@ static int smb5_charge_step_charge_init(struct smb_charger *chg,
 #define MICRO_P1A				100000
 #define MICRO_1PA				1000000
 #define MICRO_3PA				3000000
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+#define MICRO_1P8A_FOR_DCP		1800000
+#else
 #define MICRO_1P8A_FOR_DCP		2000000
+#endif
 #define MICRO_4PA				4000000
 #define OTG_DEFAULT_DEGLITCH_TIME_MS		50
 #define DEFAULT_WD_BARK_TIME			64
@@ -4131,7 +4139,11 @@ static int smb5_init_hw(struct smb5 *chip)
 	}
 
 	rc = smblib_write(chg, CHGR_FAST_CHARGE_SAFETY_TIMER_CFG_REG,
+#ifdef CONFIG_MACH_XIAOMI_VAYU
+					FAST_CHARGE_SAFETY_TIMER_768_MIN);
+#else
 					FAST_CHARGE_SAFETY_TIMER_1536_MIN);
+#endif
 	if (rc < 0) {
 		dev_err(chg->dev, "Couldn't set CHGR_FAST_CHARGE_SAFETY_TIMER_CFG_REG rc=%d\n",
 			rc);
