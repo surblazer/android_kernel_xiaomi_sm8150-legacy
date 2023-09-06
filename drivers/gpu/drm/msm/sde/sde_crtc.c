@@ -5294,7 +5294,9 @@ static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
 	}
 
 	mutex_lock(&display->panel->panel_lock);
+#ifndef CONFIG_MACH_XIAOMI_NABU
 	alpha = dsi_panel_get_fod_dim_alpha(display->panel);
+#endif
 	mutex_unlock(&display->panel->panel_lock);
 
 	dim_layer = &cstate->dim_layer[cstate->num_dim_layers];

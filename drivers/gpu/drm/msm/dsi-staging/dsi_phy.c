@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -925,6 +926,9 @@ int dsi_phy_enable(struct msm_dsi_phy *phy,
 	phy->dst_format = config->common_config.dst_format;
 	phy->cfg.pll_source = pll_source;
 	phy->cfg.bit_clk_rate_hz = config->bit_clk_rate_hz;
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	phy->cfg.cphy_strength = config->common_config.cphy_strength;
+#endif
 
 	/**
 	 * If PHY timing parameters are not present in panel dtsi file,
