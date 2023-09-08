@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -224,6 +225,9 @@ struct dsi_panel {
 
 	bool sync_broadcast_en;
 	bool tddi_doubleclick_flag;
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	bool cphy_esd_check;
+#endif
 	int power_mode;
 	enum dsi_panel_physical_type panel_type;
 
