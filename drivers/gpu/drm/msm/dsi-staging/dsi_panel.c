@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2016-2020, The Linux Foundation. All rights reserved.
+ * Copyright (C) 2021 XiaoMi, Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -44,6 +45,18 @@
 #define MAX_PANEL_JITTER		10
 #define DEFAULT_PANEL_PREFILL_LINES	25
 #define TICKS_IN_MICRO_SECOND		1000000
+
+#ifdef CONFIG_MACH_XIAOMI_NABU
+bool is_normal_boot = false;
+EXPORT_SYMBOL(is_normal_boot);
+
+static int __init read_is_normal_boot(char *s)
+{
+    strtobool(s, &is_normal_boot);
+    return 1;
+}
+__setup("androidboot.force_normal_boot=", read_is_normal_boot);
+#endif
 
 enum dsi_dsc_ratio_type {
 	DSC_8BPC_8BPP,
@@ -927,6 +940,13 @@ static int dsi_panel_parse_timing(struct dsi_mode_info *mode,
 	rc = utils->read_u32(utils->data,
 				"qcom,mdss-dsi-panel-framerate",
 				&mode->refresh_rate);
+#ifdef CONFIG_MACH_XIAOMI_NABU                
+    if (!is_normal_boot) {
+    //HACK: fix CPHY/DualDSI issue
+    mode->refresh_rate = 104;
+    }
+#endif
+                
 	if (rc) {
 		pr_err("failed to read qcom,mdss-dsi-panel-framerate, rc=%d\n",
 		       rc);
@@ -1480,6 +1500,14 @@ static int dsi_panel_parse_dfps_caps(struct dsi_panel *panel)
 	const char *name = panel->name;
 	const char *type;
 	u32 i;
+
+#ifdef CONFIG_MACH_XIAOMI_NABU    
+    if (!is_normal_boot) {
+    //HACK: fix CPHY/DualDSI issue
+    dfps_caps->dfps_support = false;
+    return rc;
+    }
+#endif
 
 	supported = utils->read_bool(utils->data,
 			"qcom,mdss-dsi-pan-enable-dynamic-fps");
