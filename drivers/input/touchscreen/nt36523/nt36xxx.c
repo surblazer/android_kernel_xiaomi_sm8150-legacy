@@ -29,7 +29,11 @@
 
 #if defined(CONFIG_FB)
 #ifdef CONFIG_DRM
+#ifdef CONFIG_MACH_XIAOMI_NABU
+#include <drm/drm_notifier.h>
+#else
 #include <linux/msm_drm_notify.h>
+#endif
 #endif
 #include <linux/notifier.h>
 #include <linux/fb.h>
@@ -3101,7 +3105,11 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 #if defined(CONFIG_FB)
 #ifdef CONFIG_DRM
 	ts->drm_notif.notifier_call = nvt_drm_notifier_callback;
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	ret = drm_register_client(&ts->drm_notif);
+#else
 	ret = msm_drm_register_client(&ts->drm_notif);
+#endif
 	if(ret) {
 		NVT_ERR("register drm_notifier failed. ret=%d\n", ret);
 		goto err_register_drm_notif_failed;
@@ -3156,7 +3164,11 @@ static int32_t nvt_ts_probe(struct spi_device *client)
 
 #if defined(CONFIG_FB)
 #ifdef CONFIG_DRM
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	if (drm_unregister_client(&ts->drm_notif))
+#else
 	if (msm_drm_unregister_client(&ts->drm_notif))
+#endif
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
 err_register_drm_notif_failed:
 #else
@@ -3277,7 +3289,11 @@ static int32_t nvt_ts_remove(struct spi_device *client)
 
 #if defined(CONFIG_FB)
 #ifdef CONFIG_DRM
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	if (drm_unregister_client(&ts->drm_notif))
+#else
 	if (msm_drm_unregister_client(&ts->drm_notif))
+#endif
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
 #else
 	if (fb_unregister_client(&ts->fb_notif))
@@ -3364,7 +3380,11 @@ static void nvt_ts_shutdown(struct spi_device *client)
 
 #if defined(CONFIG_FB)
 #ifdef CONFIG_DRM
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	if (drm_unregister_client(&ts->drm_notif))
+#else
 	if (msm_drm_unregister_client(&ts->drm_notif))
+#endif
 		NVT_ERR("Error occurred while unregistering drm_notifier.\n");
 #else
 	if (fb_unregister_client(&ts->fb_notif))
@@ -3611,7 +3631,11 @@ static int32_t nvt_ts_resume(struct device *dev)
 #ifdef CONFIG_DRM
 static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long event, void *data)
 {
+#ifdef CONFIG_MACH_XIAOMI_NABU
+	struct drm_notify_data *evdata = data;
+#else
 	struct msm_drm_notifier *evdata = data;
+#endif
 	int *blank;
 	struct nvt_ts_data *ts_data =
 		container_of(self, struct nvt_ts_data, drm_notif);
@@ -3621,14 +3645,29 @@ static int nvt_drm_notifier_callback(struct notifier_block *self, unsigned long 
 
 	if (evdata && ts_data) {
 		blank = evdata->data;
+#ifdef CONFIG_MACH_XIAOMI_NABU
+		if (event == DRM_EARLY_EVENT_BLANK) {
+			if (*blank == DRM_BLANK_POWERDOWN) {
+#else
 		if (event == MSM_DRM_EARLY_EVENT_BLANK) {
 			if (*blank == MSM_DRM_BLANK_POWERDOWN) {
+#endif
 				NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
 				flush_workqueue(ts_data->event_wq);
 				queue_work(ts_data->event_wq, &ts_data->suspend_work);
 			}
+#ifdef CONFIG_MACH_XIAOMI_NABU
+		} else if (event == DRM_R_EARLY_EVENT_BLANK) {
+			if (*blank == DRM_BLANK_POWERDOWN) {
+				NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
+				nvt_enable_doubleclick();
+			}
+		} else if (event == DRM_EVENT_BLANK) {
+			if (*blank == DRM_BLANK_UNBLANK) {
+#else
 		} else if (event == MSM_DRM_EVENT_BLANK) {
 			if (*blank == MSM_DRM_BLANK_UNBLANK) {
+#endif
 				NVT_LOG("event=%lu, *blank=%d\n", event, *blank);
 				flush_workqueue(ts_data->event_wq);
 				queue_work(ts_data->event_wq, &ts_data->resume_work);
