@@ -31,10 +31,18 @@
 #include "wcd-mbhc-v2.h"
 #include "pdata.h"
 
+#ifndef CONFIG_SND_SOC_HEADSET_2700MV
 #define WCD_MBHC_ADC_HS_THRESHOLD_MV    1700
 #define WCD_MBHC_ADC_HPH_THRESHOLD_MV   75
 #define WCD_MBHC_ADC_MICBIAS_MV         1800
 #define WCD_MBHC_FAKE_INS_RETRY         4
+#else
+#define WCD_MBHC_ADC_HS_THRESHOLD_MV    2600
+#define WCD_MBHC_ADC_HPH_THRESHOLD_MV   50
+#define WCD_MBHC_ADC_MICBIAS_MV         2700
+#define WCD_MBHC_FAKE_INS_RETRY         4
+#endif
+
 
 static int wcd_mbhc_get_micbias(struct wcd_mbhc *mbhc)
 {
