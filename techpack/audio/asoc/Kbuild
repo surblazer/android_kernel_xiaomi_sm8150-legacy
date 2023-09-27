@@ -194,6 +194,10 @@ ifeq ($(CONFIG_MACH_XIAOMI_RAPHAEL),y)
 	CDEFINES += -DCONFIG_SND_SOC_TFA9874_FOR_DAVI
 endif
 
+ifeq ($(CONFIG_MACH_XIAOMI_NABU),y)
+	CDEFINES += -DCONFIG_SND_SOC_TAS256X_FOR_DAVI
+endif
+
 KBUILD_CPPFLAGS += $(CDEFINES)
 
 # Currently, for versions of gcc which support it, the kernel Makefile
